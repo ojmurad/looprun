@@ -8,6 +8,8 @@ Looprun is a high-performance, single-file web application designed for the mode
 
 ## ✨ Key Features
 
+* **Intelligent Web Proxy:** Browse the web without boundaries. Our integrated proxy allows for secure, unrestricted access to your favorite sites directly within the app.
+* **Unified Smart Search:** A powerful, context-aware search engine that indexes web results, cloud games, and media titles simultaneously.
 * **Cloud Gaming:** Stream your favorite titles instantly without the need for installing anything.
 * **Essential Web Apps & Tools:** A curated suite of productivity and utility apps built-in.
 * **Media Streaming:** Access the latest films and shows through our unified video servers.
@@ -21,7 +23,8 @@ Looprun is a high-performance, single-file web application designed for the mode
 Looprun is built with performance and simplicity in mind:
 * **Frontend:** HTML5 / CSS3 (Tailwind CSS)
 * **Logic:** Modern JavaScript (ES6+)
-* **Format:** Single-file `.html` delivery
+* **Connectivity:** High-speed proxy tunneling & API-driven search integration.
+* **Format:** Single-file `.html` delivery.
 
 ---
 
@@ -34,24 +37,9 @@ Since Looprun is a single-file application, getting it running is as simple as i
 2.  **Enjoy** instant access to Looprun.
 
 ### For Developers
-If you want to clone Looprun and see how it works, just clone the repo. Find the instructions below.
-git clone [https://github.com/yourusername/looprun.git](https://github.com/yourusername/looprun.git)
-
+If you want to clone Looprun and see how it works, just clone the repo:
+```bash
+git clone [https://github.com/ojmurad/looprun.git](https://github.com/ojmurad/looprun.git)
+cd looprun
 # Open the file in your favorite editor
 code index.html
-🎨 Design Philosophy
-Looprun follows the "Less is More" principle. Every pixel is intentional, utilizing:
-
-Dark Mode by Default: To reduce eye strain during long gaming sessions.
-
-Fluid Animations: Smooth transitions between apps and media.
-
-Responsive Layout: Perfect viewing on desktops, tablets, and smartphones.
-
-🛡️ License
-Distributed under the Looprun Web License.
-
-📬 Contact
-Project Link: https://github.com/ojmurad/looprun
-
-(NOTE: Looprun is in beta and might not work as expected. We aren't responsible for any error or mishap, as the web interface is currently being developed.)
