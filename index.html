@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Looprun</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            --bg-grad-1: #1c1c1e;
+            --bg-grad-2: #000000;
+            --blob-1: #2563eb;
+            --blob-2: #7c3aed;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #000;
+            color: white;
+            overflow: hidden;
+            cursor: default;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        input, textarea {
+            user-select: text !important;
+            -webkit-user-select: text !important;
+            cursor: text;
+        }
+
+        button {
+            cursor: pointer;
+        }
+
+        .ios-bg {
+            background: radial-gradient(circle at 50% 120%, var(--bg-grad-1), var(--bg-grad-2));
+            position: absolute;
+            inset: 0;
+            z-index: -2;
+            pointer-events: none;
+            transition: background 0.5s ease;
+        }
+
+        .blob {
+            position: absolute;
+            filter: blur(90px);
+            z-index: -1;
+            opacity: 0.3;
+            animation: float 12s infinite ease-in-out alternate;
+            pointer-events: none;
+            transition: background 0.5s ease;
+        }
+        .blob-1 { top: -20%; left: -10%; width: 60vw; height: 60vw; background: var(--blob-1); animation-delay: 0s; }
+        .blob-2 { bottom: -20%; right: -10%; width: 70vw; height: 70vw; background: var(--blob-2); animation-delay: -5s; }
+
+        @keyframes float {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(30px, 50px) scale(1.05); }
+        }
+
+        .glass-capsule {
+            background: rgba(20, 20, 22, 0.8);
+            backdrop-filter: blur(30px) saturate(180%);
+            -webkit-backdrop-filter: blur(30px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .glass-panel {
+            background: rgba(28, 28, 32, 0.95);
+            backdrop-filter: blur(40px) saturate(200%);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 50px 100px rgba(0,0,0,0.7);
+        }
+
+        .nav-icon {
+            position: relative;
+            color: rgba(255, 255, 255, 0.6);
+            transition: all 0.2s ease;
+            cursor: pointer;
+            pointer-events: auto;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .nav-icon i {
+            transition: all 0.2s ease;
+            filter: drop-shadow(0 0 0 rgba(255,255,255,0));
+        }
+
+        .nav-icon:hover {
+            color: #fff;
+        }
+
+        .nav-icon:hover i {
+            filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.8));
+            transform: scale(1.1);
+        }
+
+        #sidebar-hint {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 14px;
+            animation: bounceLeft 1.5s infinite;
+            pointer-events: none;
+            z-index: 900;
+            opacity: 1;
+            transition: opacity 0.5s;
+        }
+        
+        @keyframes bounceLeft {
+            0%, 100% { transform: translate(0, -50%); }
+            50% { transform: translate(10px, -50%); }
+        }
+
+        .app-icon-container {
+            transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            cursor: pointer;
+            position: relative;
+            z-index: 10;
+        }
+        .app-icon-container:hover { transform: translateY(-4px) scale(1.05); }
+        .app-icon-container:active { transform: scale(0.95); }
+        
+        .app-icon-img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            border-radius: 18px; 
+            pointer-events: none; 
+            user-select: none;
+            transition: transform 0.3s ease;
+        }
+        
+        .app-icon-container:hover .app-icon-img {
+            transform: scale(1.05);
+        }
+        
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        .context-menu {
+            position: absolute;
+            display: none;
+            flex-direction: column;
+            width: 220px;
+            background: rgba(30, 30, 32, 0.9);
+            backdrop-filter: blur(25px);
+            border-radius: 16px;
+            border: 1px solid rgba(255,255,255,0.15);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+            padding: 6px;
+            z-index: 9999;
+        }
+
+        .context-item {
+            padding: 10px 12px;
+            border-radius: 10px;
+            font-size: 14px;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: background 0.1s;
+        }
+        .context-item:hover { background: rgba(255,255,255,0.15); }
+        .context-divider { height: 1px; background: rgba(255,255,255,0.1); margin: 4px 8px; }
+
+        #browser-container {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 50;
+            background: #000;
+        }
+
+        iframe { width: 100%; height: 100%; border: none; }
+
+        #browser-controls {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 100;
+            background: rgba(30, 30, 35, 0.85);
+            backdrop-filter: blur(25px);
+            padding: 10px 24px;
+            border-radius: 999px;
+            border: 1px solid rgba(255,255,255,0.15);
+            display: flex;
+            gap: 20px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.6);
+            align-items: center;
+        }
+
+        #devtools-panel {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 40vh;
+            background: #202124;
+            border-top: 1px solid #3c4043;
+            z-index: 99999;
+            display: none;
+            flex-direction: column;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #9aa0a6;
+            box-shadow: 0 -10px 30px rgba(0,0,0,0.5);
+        }
+        
+        .devtools-header {
+            background: #292a2d;
+            padding: 0 8px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid #3c4043;
+            font-size: 12px;
+        }
+
+        .devtools-tab {
+            padding: 6px 10px;
+            color: #9aa0a6;
+            cursor: default;
+        }
+        .devtools-tab.active {
+            color: #e8eaed;
+            border-bottom: 2px solid #8ab4f8;
+        }
+
+        .devtools-body {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+        }
+
+        .devtools-dom {
+            flex: 1;
+            padding: 4px;
+            overflow-y: auto;
+            font-family: 'Fira Code', monospace;
+            font-size: 13px;
+            line-height: 1.4;
+            color: #e8eaed;
+            border-right: 1px solid #3c4043;
+        }
+        
+        .tag { color: #5db0d7; }
+        .attr { color: #9aa0a6; }
+        .val { color: #ce9178; }
+        .content { color: #d4d4d4; }
+        .comment { color: #6a9955; }
+
+        .devtools-styles {
+            width: 300px;
+            background: #202124;
+            padding: 8px;
+            font-family: 'Fira Code', monospace;
+            font-size: 12px;
+            color: #d4d4d4;
+        }
+
+        .devtools-close {
+            margin-left: auto;
+            cursor: pointer;
+            padding: 4px 8px;
+        }
+        .devtools-close:hover { color: #fff; background: #3c4043; }
+
+        #top-navbar {
+            transform: translate(-150%, -50%); 
+            transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+            z-index: 1000;
+            pointer-events: auto;
+        }
+        
+        #top-navbar.visible { 
+            transform: translate(0, -50%); 
+        }
+
+        .sidebar-divider {
+            height: 1px;
+            width: 24px;
+            background: rgba(255, 255, 255, 0.4); 
+            margin: 4px 0;
+        }
+
+    </style>
+</head>
+<body class="h-screen w-full overflow-hidden text-gray-100" oncontextmenu="return false;">
+
+    <div class="ios-bg"></div>
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+
+    <div id="custom-context-menu" class="context-menu">
+        <div class="context-item" onclick="openAboutBlank()">
+            <i class="fa-solid fa-eye-slash w-4 text-center"></i> Open in about:blank
+        </div>
+        <div class="context-item" onclick="window.location.reload()">
+            <i class="fa-solid fa-rotate-right w-4 text-center"></i> Reload Looprun
+        </div>
+        <div class="context-item" onclick="copyLink()">
+            <i class="fa-solid fa-link w-4 text-center"></i> Copy Link
+        </div>
+        <div class="context-divider"></div>
+        <div class="context-item" onclick="toggleDevTools()">
+            <i class="fa-solid fa-code w-4 text-center"></i> Inspect Element
+        </div>
+    </div>
+
+    <div id="devtools-panel">
+        <div class="devtools-header">
+            <div class="devtools-tab active">Elements</div>
+            <div class="devtools-tab">Console</div>
+            <div class="devtools-tab">Sources</div>
+            <div class="devtools-tab">Network</div>
+            <div class="devtools-close" onclick="toggleDevTools()"><i class="fa-solid fa-xmark"></i></div>
+        </div>
+        <div class="devtools-body">
+            <div class="devtools-dom">
+                <div><span class="tag">&lt;!DOCTYPE</span> <span class="attr">html</span><span class="tag">&gt;</span></div>
+                <div><span class="tag">&lt;html</span> <span class="attr">lang</span>=<span class="val">"en"</span><span class="tag">&gt;</span></div>
+                <div style="padding-left: 10px"><span class="tag">&lt;head&gt;</span>...<span class="tag">&lt;/head&gt;</span></div>
+                <div style="padding-left: 10px"><span class="tag">&lt;body&gt;</span>...<span class="tag">&lt;/body&gt;</span></div>
+                <div><span class="tag">&lt;/html&gt;</span></div>
+            </div>
+            <div class="devtools-styles">
+                <div style="color: #9cdcfe">element.style <span style="color: #d4d4d4">{</span></div>
+                <div style="color: #d4d4d4">}</div>
+            </div>
+        </div>
+    </div>
+
+    <nav id="top-navbar" class="fixed top-1/2 left-6 glass-capsule px-2.5 py-4 rounded-full flex flex-col items-center gap-2">
+        <button onclick="goHome()" class="nav-icon" title="Home">
+            <i class="fa-solid fa-house text-lg"></i>
+        </button>
+        <div class="sidebar-divider"></div>
+        <button onclick="showModal('games')" class="nav-icon" title="Games">
+            <i class="fa-solid fa-gamepad text-lg"></i>
+        </button>
+        <button onclick="showModal('apps')" class="nav-icon" title="Apps">
+            <i class="fa-solid fa-layer-group text-lg"></i>
+        </button>
+        <button onclick="launchSearchPage()" class="nav-icon" title="Search">
+            <i class="fa-solid fa-magnifying-glass text-lg"></i>
+        </button>
+        <button onclick="showModal('tools')" class="nav-icon" title="Tools">
+            <i class="fa-solid fa-screwdriver-wrench text-lg"></i>
+        </button>
+        <button onclick="showModal('movies')" class="nav-icon" title="Streaming">
+            <i class="fa-solid fa-film text-lg"></i>
+        </button>
+        <div class="sidebar-divider"></div>
+        <button onclick="toggleSettings()" class="nav-icon" title="Settings">
+            <i class="fa-solid fa-gear text-lg"></i>
+        </button>
+    </nav>
+
+    <main id="home-view" class="h-full w-full flex flex-col items-center justify-center relative transition-opacity duration-300">
+        
+        <div id="sidebar-hint">
+            <i class="fa-solid fa-arrow-left text-xl"></i>
+            <span class="font-medium tracking-wide">Hover for sidebar</span>
+        </div>
+
+        <div class="relative w-full flex flex-col items-center justify-center px-4 max-w-2xl mx-auto z-10 -mt-10">
+            <div class="text-center mb-6 transform cursor-default select-none">
+                <h1 class="text-7xl md:text-9xl font-bold tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-white to-white/60 drop-shadow-2xl mb-2">
+                    Looprun
+                </h1>
+                <p class="text-white font-medium text-2xl tracking-widest uppercase mt-4 opacity-90">Beyond boundaries</p>
+            </div>
+        </div>
+
+        <footer class="absolute bottom-10 w-full text-center">
+            <button onclick="showTermsModal()" class="text-sm uppercase tracking-tight text-white/40 hover:text-white transition-colors font-medium cursor-pointer">
+                LOOPRUN APP V1.3
+            </button>
+        </footer>
+    </main>
+
+    <div id="settings-overlay" class="fixed inset-0 bg-black/60 backdrop-blur-md z-[55] hidden transition-opacity opacity-0 flex items-center justify-center">
+        <div id="settings-panel" class="glass-panel w-full max-w-md rounded-[32px] p-8 transform scale-95 transition-all duration-300 opacity-0">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-white">Settings</h2>
+                <button onclick="toggleSettings()" class="text-white/50 hover:text-white transition-colors w-10 h-10 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            
+            <div class="space-y-3 overflow-y-auto max-h-[60vh] pr-2 no-scrollbar">
+                <div class="p-4 rounded-2xl bg-white/5 border border-white/5">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="font-semibold text-white text-sm">Panic Key</span>
+                        <input type="text" id="panic-key-input" maxlength="1" value="`" class="w-8 h-8 text-center bg-white/10 rounded text-white font-mono text-sm uppercase focus:bg-white/20 outline-none border border-white/10">
+                    </div>
+                    <div class="text-xs text-white/40">Press key to redirect immediately</div>
+                </div>
+
+                <div class="flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-colors">
+                    <div>
+                        <div class="font-semibold text-white text-sm">Auto Cloak</div>
+                        <div class="text-xs text-white/40 mt-0.5">Cloak on page load</div>
+                    </div>
+                    <div class="relative w-12 h-7 bg-white/10 rounded-full cursor-pointer transition-colors" onclick="toggleSwitch(this, 'autoCloak')">
+                        <div class="absolute top-1 left-1 bg-white w-5 h-5 rounded-full transition-transform duration-200 shadow-md"></div>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-colors">
+                    <div>
+                        <div class="font-semibold text-white text-sm">Tab Cloak</div>
+                        <div class="text-xs text-white/40 mt-0.5">Open as about:blank</div>
+                    </div>
+                    <button onclick="openAboutBlank()" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-full transition-all shadow-lg shadow-blue-500/20">
+                        Launch
+                    </button>
+                </div>
+
+                <div class="p-4 rounded-2xl bg-white/5 border border-white/5">
+                    <div class="font-semibold text-white text-sm mb-2">Theme</div>
+                    <select onchange="changeTheme(this.value)" class="w-full bg-black/30 text-white text-xs p-2 rounded-lg border border-white/10 outline-none">
+                        <option value="midnight">Midnight (Default)</option>
+                        <option value="deepsea">Deep Sea</option>
+                        <option value="matrix">Matrix</option>
+                        <option value="sunset">Sunset</option>
+                    </select>
+                </div>
+
+                 <div class="grid grid-cols-2 gap-3 mt-2">
+                    <button onclick="exportData()" class="p-3 rounded-2xl bg-white/5 hover:bg-white/10 text-xs font-semibold text-white border border-white/5 transition-colors">Export Config</button>
+                    <button onclick="importData()" class="p-3 rounded-2xl bg-white/5 hover:bg-white/10 text-xs font-semibold text-white border border-white/5 transition-colors">Import Config</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="content-modal-overlay" class="fixed inset-0 z-[60] flex items-center justify-center pointer-events-none opacity-0 transition-opacity duration-300">
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-md" onclick="closeContentModal()"></div>
+        <div id="content-modal" class="glass-panel p-8 rounded-[40px] max-w-5xl w-full mx-6 shadow-2xl transform scale-95 transition-all duration-300 opacity-0 pointer-events-auto max-h-[85vh] flex flex-col">
+            <div class="flex justify-between items-center mb-8 px-2">
+                <h3 id="modal-title" class="text-3xl font-bold text-white tracking-tight">Category</h3>
+                <button onclick="closeContentModal()" class="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors cursor-pointer z-50">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            <div id="modal-grid" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-8 overflow-y-auto p-4 no-scrollbar">
+            </div>
+        </div>
+    </div>
+
+    <div id="browser-container">
+        <div id="browser-controls">
+            <button onclick="goHome()" class="text-white/70 hover:text-white transition transform hover:scale-110" title="Home">
+                <i class="fa-solid fa-house text-lg"></i>
+            </button>
+            <div class="w-px h-5 bg-white/20"></div>
+            <button onclick="browserBack()" class="text-white/70 hover:text-white transition transform hover:scale-110" title="Back">
+                <i class="fa-solid fa-chevron-left text-lg"></i>
+            </button>
+            <button onclick="browserForward()" class="text-white/70 hover:text-white transition transform hover:scale-110" title="Forward">
+                <i class="fa-solid fa-chevron-right text-lg"></i>
+            </button>
+            <button onclick="reloadBrowser()" class="text-white/70 hover:text-white transition transform hover:rotate-180 duration-500" title="Reload">
+                <i class="fa-solid fa-rotate-right text-lg"></i>
+            </button>
+            <div class="w-px h-5 bg-white/20"></div>
+            <button onclick="toggleFullscreen()" class="text-white/70 hover:text-white transition transform hover:scale-110" title="Fullscreen">
+                <i class="fa-solid fa-expand text-lg"></i>
+            </button>
+            <button onclick="closeBrowser()" class="text-white/70 hover:text-red-400 transition transform hover:scale-110" title="Close">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+        </div>
+        <iframe id="content-frame" src="about:blank" allowfullscreen></iframe>
+    </div>
+
+    <script>
+        const looprunData = {
+            games: [
+                { name: "Snake", icon: "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/4e/c9/d5/4ec9d52a-d78f-e570-2ea1-c51296bb3f1e/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/400x400ia-75.webp", url: "/snake.html" },
+                { name: "Run 3", icon: "https://is1-ssl.mzstatic.com/image/thumb/Purple118/v4/53/14/a5/5314a58a-36a9-a0aa-9832-c381f9f4e81b/mzl.snentiax.png/400x400ia-75.webp", url: "https://www.coolmathgames.com/sites/default/files/public_games/33059/" },
+                { name: "F&W", icon: "https://is1-ssl.mzstatic.com/image/thumb/Purple124/v4/b4/ac/bc/b4acbc37-6b1a-5dc1-f184-04498e2d1651/AppIcon-1x_U007emarketing-85-220-0-9.png/400x400ia-75.webp", url: "https://www.coolmathgames.com/sites/default/files/public_games/40034/?gd_sdk_referrer_url=https%3A%2F%2Fwww.coolmathgames.com%2F0-fireboy-and-water-girl-in-the-forest-temple" },
+                { name: "Moto X3M", icon: "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/86/fa/43/86fa43da-af6f-8a66-98f1-a7e6308a3e83/AppIcon-0-0-1x_U007emarketing-0-8-0-0-85-220.png/400x400ia-75.webp", url: "/motox3m.html" },
+                { name: "2048", icon: "https://is1-ssl.mzstatic.com/image/thumb/Purple125/v4/68/50/8e/68508e20-c28b-3c70-3f6c-946797493068/AppIcon-1x_U007emarketing-0-10-0-0-85-220.png/400x400ia-75.webp", url: "/2048.html" },
+                { name: "Tiny Fishing", icon: "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/9b/e0/80/9be080f4-4a8f-f9b0-b989-b2a8e575080b/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/400x400ia-75.webp", url: "/tinyfishing.html" },
+                { name: "Slope", icon: "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/a3/25/3c/a3253c02-e46d-ad3f-5b3e-34ada32b5a26/AppIcon-0-0-1x_U007emarketing-0-7-0-85-220.png/400x400ia-75.webp", url: "/slope.html" },
+                { name: "Vex 5", icon: "https://is1-ssl.mzstatic.com/image/thumb/Purple114/v4/8b/77/e0/8b77e059-fd8a-a576-1074-bf8dc481cca9/AppIcon-0-0-1x_U007emarketing-0-0-0-7-0-0-sRGB-0-0-0-GLES2_U002c0-512MB-85-220-0-0.png/400x400ia-75.webp", url: "/vex5.html" },
+                { name: "World's Hardest Game", icon: "https://is1-ssl.mzstatic.com/image/thumb/Purple128/v4/f8/f2/85/f8f28569-048b-c989-b3bc-1df6ea96ae5a/AppIcon-1x_U007emarketing-85-220-6.png/400x400ia-75.webp", url: "/whg.html" },
+                { name: "Paper.io 2", icon: "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/50/0a/b3/500ab395-f5ea-78b9-b5d8-651d891f1234/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/400x400ia-75.webp", url: "/paperio2.html" },
+                { name: "Chess", icon: "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/6c/aa/db/6caadbdc-4216-b930-4177-604b4a7dce33/AppIcon-1x_U007epad-0-1-0-0-85-220-0.png/400x400ia-75.webp", url: "/chess.html" },
+                { name: "Pac-Man", icon: "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/d9/0f/32/d90f32cf-e841-e6f6-52ac-624e08f302ff/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/400x400ia-75.webp", url: "/pacman.html" },
+                { name: "Clash Royale", icon: "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource221/v4/77/34/e7/7734e758-7e3e-eedf-2f69-a8182659320e/Placeholder.mill/400x400bb-75.webp", url: "/clashroyale.html" }
+            ],
+            apps: [
+                { name: "Google", icon: "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/41/76/57/417657ae-04d9-7ef0-644a-93051358edfa/logo_gsa_gradient_ios_color-0-1x_U007epad-0-0-0-1-0-0-sRGB-0-0-85-220-0.png/400x400ia-75.webp", url: "/google.html" },
+                { name: "TikTok", icon: "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/66/2c/e7/662ce7f5-ae55-0929-64e2-94e249ed8dbc/AppIcon_TikTok-0-0-1x_U007epad-0-1-0-0-85-220.png/400x400ia-75.webp", url: "/tiktok.html" },
+                { name: "YouTube", icon: "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource221/v4/20/73/25/207325a8-82c7-6dc9-94fb-6b9e9eb9aad8/Placeholder.mill/400x400bb-75.webp", url: "/youtube.html" },
+                { name: "Instagram", icon: "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/35/13/a5/3513a5ad-7646-177b-bb47-a7a804f21296/Placeholder.mill/400x400bb-75.webp", url: "/instagram.html" },
+                { name: "Snapchat", icon: "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource221/v4/4c/c4/2e/4cc42e3b-454d-6a12-647e-1d63a2dade96/Placeholder.mill/400x400bb-75.webp", url: "/snapchat.html" },
+                { name: "Facebook", icon: "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource221/v4/d7/7e/1e/d77e1e00-5095-7589-6794-bca16df6e54d/Placeholder.mill/400x400bb-75.webp", url: "/facebook.html" },
+                { name: "X", icon: "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/a2/63/9e/a2639e28-9fd6-af1d-e2b8-b4cd845d9b71/ProductionAppIcon-0-0-1x_U007emarketing-0-8-0-0-0-85-220.png/400x400ia-75.webp", url: "/twitter.html" },
+                { name: "Spotify", icon: "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/f3/9e/3e/f39e3e7f-56a7-aba3-3f75-740439b4a7b2/AppIcon-0-0-1x_U007emarketing-0-7-0-0-85-220.png/400x400ia-75.webp", url: "/spotify.html" },
+                { name: "Discord", icon: "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/bd/0d/f0/bd0df08f-0d4d-3f9c-19fc-8ed842d54ce9/AppIcon-0-0-1x_U007epad-0-1-0-85-220.png/400x400ia-75.webp", url: "/discord.html" },
+                { name: "GitHub", icon: "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource221/v4/ca/ca/62/caca6275-2086-ad07-8de3-268a44381593/Placeholder.mill/400x400bb-75.webp", url: "/github.html" }
+            ],
+            tools: [
+                { name: "Calculator", icon: "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/0b/48/36/0b483611-ebfd-3f86-4636-529997a78283/Placeholder.mill/400x400bb-75.webp", url: "/calculator.html" },
+                { name: "Terminal", icon: "https://is1-ssl.mzstatic.com/image/thumb/Purple123/v4/c1/0f/ae/c10fae4f-d53d-779d-83a9-590d1f00ad0a/AppIcon-0-1x_U007emarketing-0-7-0-0-85-220.png/400x400ia-75.webp", url: "/terminal.html" },
+                { name: "RNG", icon: "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource221/v4/d8/e1/f6/d8e1f6ed-2a7e-0f3d-9e5e-bbc695f42f5e/Placeholder.mill/400x400bb-75.webp", url: "/rng.html" }
+            ],
+            movies: [
+                { name: "Netflix", icon: "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/36/13/4c/36134c3c-d203-59b0-283f-3fcdc20d6a01/Placeholder.mill/400x400bb-75.webp", url: "/netflix.html" },
+                { name: "Hulu", icon: "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/12/92/b9/1292b969-c7c3-6e14-a36b-7e7d2995c7db/Placeholder.mill/400x400bb-75.webp", url: "/hulu.html" },
+                { name: "Tubi", icon: "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/3b/c8/63/3bc86329-9df7-01b9-e185-147ceaea2925/Placeholder.mill/400x400bb-75.webp", url: "/tubi.html" },
+                { name: "Pluto", icon: "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/a8/cd/55/a8cd55c7-bfa0-3e32-3ebd-15b7a7b0704e/AppIcon-0-0-1x_U007epad-0-1-85-220.png/400x400ia-75.webp", url: "/pluto.html" },
+                { name: "Disney+", icon: "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/a0/28/46/a028462f-fd29-2d06-6084-c8eb1de2af4d/AppIcon-0-0-1x_U007emarketing-0-8-0-0-85-220.png/400x400ia-75.webp", url: "/disney.html" },
+                { name: "Prime", icon: "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/77/71/93/77719355-1763-df97-f9be-854b044706fc/Placeholder.mill/400x400bb-75.webp", url: "/prime.html" },
+                { name: "Starz", icon: "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/4f/5c/bd/4f5cbd86-1d37-c987-9994-0544e9eb356e/Placeholder.mill/400x400bb-75.webp", url: "/starz.html" },
+                { name: "Paramount+", icon: "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/53/af/67/53af6764-d9a9-c0e6-527a-6b6687aa8c14/Placeholder.mill/400x400bb-75.webp", url: "/paramount.html" },
+                { name: "YouTube TV", icon: "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/4b/8e/b1/4b8eb168-78d0-53dd-fc89-2cf4e55db8dc/logo_youtube_television_2024_q4_color-0-1x_U007emarketing-0-0-0-7-0-0-0-85-220-0.png/400x400ia-75.webp", url: "/youtubetv.html" },
+                { name: "Peacock", icon: "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/f3/35/0d/f3350d6d-8572-5bca-479c-f4f0855c713b/AppIcon-0-0-1x_U007epad-0-1-0-0-85-220.png/400x400ia-75.webp", url: "/peacock.html" },
+                { name: "Sling", icon: "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/2f/51/b8/2f51b89c-7917-6e1f-aa4f-bf490535555e/AppIcon-0-0-1x_U007emarketing-0-8-0-0-85-220.png/400x400ia-75.webp", url: "/sling.html" }
+            ]
+        };
+
+        const searchContainer = document.querySelector('.search-container');
+        
+        searchContainer.addEventListener('mousemove', (e) => {
+            const rect = searchContainer.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            searchContainer.style.setProperty('--mouse-x', `${x}px`);
+            searchContainer.style.setProperty('--mouse-y', `${y}px`);
+        });
+
+        let config = {
+            panicKey: '`',
+            autoCloak: false,
+            theme: 'midnight'
+        };
+
+        const themes = {
+            midnight: { bg1: '#1c1c1e', bg2: '#000000', blob1: '#2563eb', blob2: '#7c3aed' },
+            deepsea: { bg1: '#0f172a', bg2: '#020617', blob1: '#06b6d4', blob2: '#3b82f6' },
+            matrix: { bg1: '#022c22', bg2: '#000000', blob1: '#22c55e', blob2: '#166534' },
+            sunset: { bg1: '#4a044e', bg2: '#2e1065', blob1: '#f472b6', blob2: '#c084fc' }
+        };
+
+        function init() {
+            if (config.autoCloak) {
+                openAboutBlank();
+            }
+            applyTheme(config.theme);
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === config.panicKey) {
+                window.location.href = 'https://google.com';
+            }
+        });
+
+        const contextMenu = document.getElementById('custom-context-menu');
+        window.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+            const x = e.clientX;
+            const y = e.clientY;
+            
+            const menuWidth = 220;
+            const menuHeight = 200;
+            
+            let posX = x;
+            let posY = y;
+
+            if (x + menuWidth > window.innerWidth) posX = window.innerWidth - menuWidth - 10;
+            if (y + menuHeight > window.innerHeight) posY = window.innerHeight - menuHeight - 10;
+
+            contextMenu.style.left = `${posX}px`;
+            contextMenu.style.top = `${posY}px`;
+            contextMenu.style.display = 'flex';
+        });
+
+        window.addEventListener('click', () => {
+            contextMenu.style.display = 'none';
+        });
+
+        const topNavbar = document.getElementById('top-navbar');
+        const sidebarHint = document.getElementById('sidebar-hint');
+        let isHoveringNavbar = false;
+
+        topNavbar.addEventListener('mouseenter', () => isHoveringNavbar = true);
+        topNavbar.addEventListener('mouseleave', () => isHoveringNavbar = false);
+        
+        document.addEventListener('mousemove', (e) => {
+            if (e.clientX < 100 || isHoveringNavbar) {
+                topNavbar.classList.add('visible');
+                if(sidebarHint) sidebarHint.style.opacity = '0';
+            } else {
+                topNavbar.classList.remove('visible');
+            }
+        });
+
+        function copyLink() {
+            navigator.clipboard.writeText(window.location.href);
+            contextMenu.style.display = 'none';
+        }
+
+        const devToolsPanel = document.getElementById('devtools-panel');
+        function toggleDevTools() {
+            contextMenu.style.display = 'none';
+            if (devToolsPanel.style.display === 'flex') {
+                devToolsPanel.style.display = 'none';
+            } else {
+                devToolsPanel.style.display = 'flex';
+            }
+        }
+        
+        const settingsOverlay = document.getElementById('settings-overlay');
+        const settingsPanel = document.getElementById('settings-panel');
+        let settingsOpen = false;
+
+        function toggleSettings() {
+            settingsOpen = !settingsOpen;
+            if(settingsOpen) {
+                settingsOverlay.classList.remove('hidden');
+                requestAnimationFrame(() => {
+                    settingsOverlay.classList.remove('opacity-0');
+                    settingsPanel.classList.remove('opacity-0');
+                    settingsPanel.classList.remove('scale-95');
+                    settingsPanel.classList.add('scale-100');
+                });
+            } else {
+                settingsPanel.classList.remove('scale-100');
+                settingsPanel.classList.add('scale-95');
+                settingsPanel.classList.add('opacity-0');
+                settingsOverlay.classList.add('opacity-0');
+                setTimeout(() => {
+                    settingsOverlay.classList.add('hidden');
+                }, 300);
+            }
+        }
+        
+        function goHome() {
+            document.getElementById('browser-container').style.display = 'none';
+            closeContentModal();
+            const home = document.getElementById('home-view');
+            home.style.opacity = '0';
+            setTimeout(() => home.style.opacity = '1', 50);
+            closeBrowser();
+        }
+
+        function showModal(category) {
+            const modalOverlay = document.getElementById('content-modal-overlay');
+            const grid = document.getElementById('modal-grid');
+            const title = document.getElementById('modal-title');
+            const modal = document.getElementById('content-modal');
+
+            const categoryTitles = { games: 'Arcade', apps: 'Applications', tools: 'Utilities', movies: 'Streaming' };
+            title.innerText = categoryTitles[category];
+
+            grid.innerHTML = '';
+            looprunData[category].forEach(item => {
+                const btn = document.createElement('button');
+                btn.className = "app-icon-container flex flex-col items-center gap-3 group";
+                btn.onclick = () => launchContent(item.url);
+                
+                btn.innerHTML = `
+                    <img src="${item.icon}" class="app-icon-img" draggable="false">
+                    <span class="text-sm font-semibold text-white group-hover:text-white transition-colors">${item.name}</span>
+                `;
+                grid.appendChild(btn);
+            });
+
+            modalOverlay.classList.remove('opacity-0', 'pointer-events-none');
+            modal.classList.remove('opacity-0', 'scale-95');
+            modal.classList.add('scale-100');
+        }
+
+        function closeContentModal() {
+            const modalOverlay = document.getElementById('content-modal-overlay');
+            const modal = document.getElementById('content-modal');
+            
+            modal.classList.remove('scale-100');
+            modal.classList.add('scale-95', 'opacity-0');
+            modalOverlay.classList.add('opacity-0');
+            setTimeout(() => {
+                modalOverlay.classList.add('pointer-events-none');
+            }, 300);
+        }
+
+        function showTermsModal() { alert("Looprun Terms: Free to use. No warranties."); }
+
+        function launchContent(url) {
+            closeContentModal();
+            const frame = document.getElementById('content-frame');
+            const controls = document.getElementById('browser-controls');
+            
+            frame.src = url;
+            
+            if (url === '/search.html') {
+                controls.style.display = 'none';
+            } else {
+                controls.style.display = 'flex';
+            }
+            
+            document.getElementById('browser-container').style.display = 'block';
+        }
+
+        function launchSearchPage() {
+            launchContent('/search.html');
+        }
+
+        function closeBrowser() {
+            const frame = document.getElementById('content-frame');
+            frame.src = 'about:blank';
+            document.getElementById('browser-container').style.display = 'none';
+        }
+
+        function reloadBrowser() {
+            const frame = document.getElementById('content-frame');
+            frame.src = frame.src;
+        }
+
+        function browserBack() {
+             try { document.getElementById('content-frame').contentWindow.history.back(); } catch(e) {}
+        }
+
+        function browserForward() {
+             try { document.getElementById('content-frame').contentWindow.history.forward(); } catch(e) {}
+        }
+
+        function toggleFullscreen() {
+            const frame = document.getElementById('content-frame');
+            if (!document.fullscreenElement) {
+                frame.requestFullscreen().catch(err => {
+                    alert(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`);
+                });
+            } else {
+                document.exitFullscreen();
+            }
+        }
+
+        function openAboutBlank() {
+            const win = window.open();
+            win.document.body.style.margin = '0';
+            win.document.body.style.height = '100vh';
+            const iframe = win.document.createElement('iframe');
+            iframe.style.border = 'none';
+            iframe.style.width = '100%';
+            iframe.style.height = '100%';
+            iframe.style.margin = '0';
+            iframe.src = window.location.href;
+            win.document.body.appendChild(iframe);
+        }
+
+        function toggleSwitch(el, key) {
+            const knob = el.querySelector('div');
+            const isChecked = knob.classList.contains('translate-x-5');
+            
+            if (!isChecked) {
+                knob.classList.add('translate-x-5');
+                el.classList.remove('bg-white/10');
+                el.classList.add('bg-blue-500');
+                if(key) config[key] = true;
+            } else {
+                knob.classList.remove('translate-x-5');
+                el.classList.add('bg-white/10');
+                el.classList.remove('bg-blue-500');
+                if(key) config[key] = false;
+            }
+        }
+
+        document.getElementById('panic-key-input').addEventListener('input', (e) => {
+            config.panicKey = e.target.value.toLowerCase();
+        });
+
+        function changeTheme(themeName) {
+            config.theme = themeName;
+            applyTheme(themeName);
+        }
+
+        function applyTheme(name) {
+            const t = themes[name];
+            if (!t) return;
+            document.documentElement.style.setProperty('--bg-grad-1', t.bg1);
+            document.documentElement.style.setProperty('--bg-grad-2', t.bg2);
+            document.documentElement.style.setProperty('--blob-1', t.blob1);
+            document.documentElement.style.setProperty('--blob-2', t.blob2);
+        }
+
+        function exportData() {
+            const dataStr = JSON.stringify(config);
+            navigator.clipboard.writeText(dataStr).then(() => {
+                alert("Configuration copied to clipboard!");
+            });
+        }
+
+        function importData() {
+            const dataStr = prompt("Paste configuration string here:");
+            if (dataStr) {
+                try {
+                    const newConfig = JSON.parse(dataStr);
+                    config = { ...config, ...newConfig };
+                    
+                    document.getElementById('panic-key-input').value = config.panicKey;
+                    
+                    const acSwitch = document.querySelector('div[onclick*="autoCloak"]');
+                    const acKnob = acSwitch.querySelector('div');
+                    if(config.autoCloak) {
+                        acKnob.classList.add('translate-x-5');
+                        acSwitch.classList.remove('bg-white/10');
+                        acSwitch.classList.add('bg-blue-500');
+                    } else {
+                        acKnob.classList.remove('translate-x-5');
+                        acSwitch.classList.add('bg-white/10');
+                        acSwitch.classList.remove('bg-blue-500');
+                    }
+
+                    applyTheme(config.theme);
+                    document.querySelector(`select[onchange*="changeTheme"]`).value = config.theme;
+
+                    alert("Configuration imported successfully!");
+                } catch (e) {
+                    alert("Invalid configuration string.");
+                }
+            }
+        }
+
+        init();
+
+    </script>
+</body>
+</html>
