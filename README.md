@@ -8,7 +8,7 @@ Looprun is a high-performance, single-file web application designed for the mode
 
 ## ✨ Key Features
 
-* **Intelligent Web Proxy Powered by Local UV servers:** Browse the web without boundaries. Our integrated proxy allows for secure, unrestricted access to your favorite sites directly within the app.
+* **Intelligent Web Proxy Powered by Holy UB:** Browse the web without boundaries. Our integrated proxy allows for secure, unrestricted access to your favorite sites directly within the app.
 * **Unified Smart Search:** A powerful, context-aware search engine that indexes web results, cloud games, and media titles simultaneously.
 * **Cloud Gaming:** Stream your favorite titles instantly without the need for installing anything.
 * **Essential Web Apps & Tools:** A curated suite of productivity and utility apps built-in.
@@ -36,10 +36,4 @@ Since Looprun is a single-file application, getting it running is as simple as i
 1.  **Visit our site** by going to `https://looprundev.w3spaces.com`. (We are switching to a domain provider for easy access soon.)
 2.  **Enjoy** instant access to Looprun.
 
-### For Developers
-If you want to clone Looprun and see how it works, just clone the repo:
-```bash
-git clone [https://github.com/ojmurad/looprun.git](https://github.com/ojmurad/looprun.git)
-cd looprun
-# Open the file in your favorite editor
-code index.html
+(NOTE: Looprun is expiremental and uses Holy Unblocker's UV servers to deliver content. The search may be blocked/restricted for you depending on your WiFi specs or Network Filtering.)
