@@ -8,7 +8,7 @@ Looprun is a high-performance, single-file web application designed for the mode
 
 ## ✨ Key Features
 
-* **Intelligent Web Proxy:** Browse the web without boundaries. Our integrated proxy allows for secure, unrestricted access to your favorite sites directly within the app.
+* **Intelligent Web Proxy Powered by Local UV servers:** Browse the web without boundaries. Our integrated proxy allows for secure, unrestricted access to your favorite sites directly within the app.
 * **Unified Smart Search:** A powerful, context-aware search engine that indexes web results, cloud games, and media titles simultaneously.
 * **Cloud Gaming:** Stream your favorite titles instantly without the need for installing anything.
 * **Essential Web Apps & Tools:** A curated suite of productivity and utility apps built-in.
